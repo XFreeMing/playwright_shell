@@ -1,0 +1,124 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Playwright Shell: Run Task",
+      "type": "debugpy",
+      "request": "launch",
+      "module": "playwright_shell.cli",
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal",
+      "justMyCode": false,
+      "envFile": "${workspaceFolder}/.env",
+      "env": {
+        "PYTHONPATH": "${workspaceFolder}/src"
+      },
+      "args": [
+        "run",
+        "${input:taskName}"
+      ]
+    },
+    {
+      "name": "Playwright Shell: Open URL",
+      "type": "debugpy",
+      "request": "launch",
+      "module": "playwright_shell.cli",
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal",
+      "justMyCode": false,
+      "envFile": "${workspaceFolder}/.env",
+      "env": {
+        "PYTHONPATH": "${workspaceFolder}/src"
+      },
+      "args": [
+        "open",
+        "${input:openUrl}",
+        "--auth-profile",
+        "${input:authProfile}"
+      ]
+    },
+    {
+      "name": "Playwright Shell: Geekbang Demo",
+      "type": "debugpy",
+      "request": "launch",
+      "module": "playwright_shell.cli",
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal",
+      "justMyCode": false,
+      "envFile": "${workspaceFolder}/.env",
+      "env": {
+        "PYTHONPATH": "${workspaceFolder}/src"
+      },
+      "args": [
+        "run",
+        "geekbang_open_demo"
+      ]
+    },
+    {
+      "name": "Playwright Shell: Auth Login",
+      "type": "debugpy",
+      "request": "launch",
+      "module": "playwright_shell.cli",
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal",
+      "justMyCode": false,
+      "envFile": "${workspaceFolder}/.env",
+      "env": {
+        "PYTHONPATH": "${workspaceFolder}/src"
+      },
+      "args": [
+        "auth",
+        "login",
+        "${input:authProfile}"
+      ]
+    },
+    {
+      "name": "Playwright Shell: Auth Status",
+      "type": "debugpy",
+      "request": "launch",
+      "module": "playwright_shell.cli",
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal",
+      "justMyCode": false,
+      "envFile": "${workspaceFolder}/.env",
+      "env": {
+        "PYTHONPATH": "${workspaceFolder}/src"
+      },
+      "args": [
+        "auth",
+        "status",
+        "${input:authProfile}"
+      ]
+    }
+  ],
+  "inputs": [
+    {
+      "id": "taskName",
+      "type": "pickString",
+      "description": "Select a configured task",
+      "options": [
+        "geekbang_open_demo",
+        "comment_demo",
+        "collect_demo",
+        "download_demo"
+      ],
+      "default": "geekbang_open_demo"
+    },
+    {
+      "id": "openUrl",
+      "type": "promptString",
+      "description": "URL to open in the current OpenClaw Chrome",
+      "default": "https://time.geekbang.org/"
+    },
+    {
+      "id": "authProfile",
+      "type": "pickString",
+      "description": "Auth profile to reuse",
+      "options": [
+        "zhihu_default",
+        "bilibili_default"
+      ],
+      "default": "zhihu_default"
+    }
+  ]
+}

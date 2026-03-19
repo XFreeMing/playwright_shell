@@ -1,0 +1,43 @@
+tasks:
+  - name: geekbang_open_demo
+    workflow: browse
+    enabled: true
+    description: Open the Geekbang homepage in the existing OpenClaw browser and save analysis artifacts.
+    inputs:
+      target_url: https://time.geekbang.org/
+      reuse_current: false
+      analyze: true
+      label: geekbang-home
+
+  - name: comment_demo
+    workflow: comment
+    enabled: true
+    auth_profile: zhihu_default
+    description: Submit a comment through DOM selectors, with optional keyboard fallback.
+    inputs:
+      target_url: https://example.com/post/123
+      comment_box: textarea
+      submit_button: button[type='submit']
+      comment_text: hello from playwright-shell
+      use_desktop_submit: false
+
+  - name: collect_demo
+    workflow: collect
+    enabled: true
+    auth_profile: bilibili_default
+    description: Collect cards from a listing page into JSON.
+    inputs:
+      target_url: https://example.com/list
+      item_selector: .card
+      fields:
+        title: .title
+        link: a
+      output_path: data/collect/collect_demo.json
+
+  - name: download_demo
+    workflow: download
+    enabled: true
+    description: Download a file from a page by clicking a download trigger.
+    inputs:
+      target_url: https://example.com/download
+      download_trigger: a[data-download]

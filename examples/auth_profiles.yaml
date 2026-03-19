@@ -1,0 +1,23 @@
+profiles:
+  - name: zhihu_default
+    provider: zhihu
+    enabled: true
+    description: Zhihu persistent login profile for comment and collection workflows.
+    logged_in_selector: "button[aria-label='Open Profile Menu'], a[href='/creator']"
+    logged_out_selector: "input[name='username'], input[name='account']"
+
+  - name: bilibili_default
+    provider: bilibili
+    enabled: true
+    description: Bilibili persistent login profile for publishing and collection workflows.
+    logged_in_selector: ".header-avatar-wrap, .bili-avatar, a[href*='space.bilibili.com']"
+    logged_out_selector: "input[placeholder*='账号'], input[placeholder*='手机号']"
+
+  - name: generic_site
+    provider: generic
+    enabled: false
+    base_url: https://example.com
+    login_url: https://example.com/login
+    description: Template profile for custom websites.
+    logged_in_selector: ".account-avatar"
+    logged_out_selector: "form.login-form"
