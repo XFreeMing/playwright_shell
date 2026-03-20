@@ -14,6 +14,8 @@ It combines:
 - PyAutoGUI，用于在 DOM 自动化不足时补充键盘和鼠标操作
 - Workflow modules for business actions such as commenting, collection, and downloads
 - 工作流模块，用于实现自动评论、信息采集、下载等业务动作
+- InfoQ publishing workflow for opening the publish page and triggering article creation
+- InfoQ 发布工作流，用于打开发布页并触发文章创建入口
 
 The architecture is designed so that browser control, desktop control, workflow logic,
 and task configuration stay isolated.
@@ -84,6 +86,7 @@ uv run playwright-shell auth login zhihu_default
 uv run playwright-shell open https://www.zhihu.com --auth-profile zhihu_default
 uv run playwright-shell list-tasks
 uv run playwright-shell run geekbang_open_demo
+uv run playwright-shell run infoq_publish_create_demo
 uv run playwright-shell run comment_demo
 ```
 
@@ -198,6 +201,34 @@ uv run playwright-shell run geekbang_open_demo
 This task connects to the existing OpenClaw Chrome, opens `https://time.geekbang.org/`,
 and saves page analysis artifacts under `data/page_analysis/`.
 这个任务会连接现有的 OpenClaw Chrome，打开 `https://time.geekbang.org/`，并把页面分析产物保存到 `data/page_analysis/`。
+
+## InfoQ Demo
+
+## InfoQ 示例
+
+The project includes a demo task for opening the InfoQ publish page and clicking the `立即创作` button.
+项目内置了一个 InfoQ 示例任务，用于打开发布页并点击 `立即创作` 按钮。
+
+```bash
+uv run playwright-shell run infoq_publish_create_demo
+```
+
+This task opens `https://www.infoq.cn/profile/C1552CBAA94214/publish`, waits for the SPA content,
+finds the create button by role or text, clicks it, and saves analysis artifacts after the click.
+这个任务会打开 `https://www.infoq.cn/profile/C1552CBAA94214/publish`，等待 SPA 页面渲染完成后，
+通过角色或文本定位 `立即创作` 按钮，点击后再保存页面分析产物。
+
+The repository also includes an article publish demo task:
+仓库里还提供了一个完整的发文 demo 任务：
+
+```bash
+uv run playwright-shell run infoq_publish_article_demo
+```
+
+This task clicks the create button, captures the newly opened draft tab, fills the article title and body,
+opens the publish settings dialog, writes the summary and tags, and clicks `确定`.
+这个任务会点击创作按钮，捕获新打开的草稿页签，填写文章标题和正文，打开发布设置弹窗，
+填写摘要和标签，最后点击 `确定`。
 
 ## VS Code Debug
 

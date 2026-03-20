@@ -112,6 +112,13 @@ def build_auth_provider_registry() -> dict[str, AuthProvider]:
             logged_in_selector=".header-avatar-wrap, .bili-avatar, a[href*='space.bilibili.com']",
             logged_out_selector="input[placeholder*='账号'], input[placeholder*='手机号']",
         ),
+        AuthProvider(
+            "infoq",
+            base_url="https://www.infoq.cn/",
+            login_url="https://www.infoq.cn/",
+            logged_in_selector="a[href*='/profile/'], .user-avatar, .header-avatar",
+            logged_out_selector="text=登录, text=注册",
+        ),
     ]
     return {provider.name: provider for provider in providers}
 

@@ -98,6 +98,8 @@
       "description": "Select a configured task",
       "options": [
         "geekbang_open_demo",
+        "infoq_publish_create_demo",
+        "infoq_publish_article_demo",
         "comment_demo",
         "collect_demo",
         "download_demo"
@@ -116,7 +118,8 @@
       "description": "Auth profile to reuse",
       "options": [
         "zhihu_default",
-        "bilibili_default"
+        "bilibili_default",
+        "infoq_default"
       ],
       "default": "zhihu_default"
     }

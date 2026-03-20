@@ -4,6 +4,7 @@ from pathlib import Path
 
 import typer
 
+from playwright_shell.commands.infoq import infoq_app
 from playwright_shell.config import AutomationSettings
 from playwright_shell.logging_utils import configure_logging
 from playwright_shell.runtime import AutomationRuntime
@@ -14,6 +15,7 @@ from playwright_shell.services.page_analyzer import PageAnalyzer
 app = typer.Typer(help="Playwright shell for browser and desktop automation workflows.")
 auth_app = typer.Typer(help="Manage persistent login profiles for different websites.")
 app.add_typer(auth_app, name="auth")
+app.add_typer(infoq_app, name="infoq")
 
 
 def build_settings(task_file: Path | None = None) -> AutomationSettings:

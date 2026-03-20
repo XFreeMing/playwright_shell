@@ -13,6 +13,15 @@ profiles:
     logged_in_selector: ".header-avatar-wrap, .bili-avatar, a[href*='space.bilibili.com']"
     logged_out_selector: "input[placeholder*='账号'], input[placeholder*='手机号']"
 
+  - name: infoq_default
+    provider: infoq
+    enabled: true
+    base_url: https://www.infoq.cn/
+    login_url: https://www.infoq.cn/
+    description: InfoQ persistent login profile for publishing, commenting, and collection workflows.
+    logged_in_selector: "a[href*='/profile/'], .user-avatar, .header-avatar"
+    logged_out_selector: "text=登录, text=注册"
+
   - name: generic_site
     provider: generic
     enabled: false

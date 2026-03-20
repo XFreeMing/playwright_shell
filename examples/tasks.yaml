@@ -9,6 +9,43 @@ tasks:
       analyze: true
       label: geekbang-home
 
+  - name: infoq_publish_create_demo
+    workflow: infoq_publish
+    enabled: true
+    auth_profile: infoq_default
+    description: Open the InfoQ publish page and click the create-now button.
+    inputs:
+      target_url: https://www.infoq.cn/profile/C1552CBAA94214/publish
+      reuse_current: false
+      analyze_after_click: true
+      label: infoq-publish-create
+
+  - name: infoq_publish_article_demo
+    workflow: infoq_article_publish
+    enabled: true
+    auth_profile: infoq_default
+    description: Open the InfoQ publish page, create a new draft tab, fill demo content, and confirm publish.
+    inputs:
+      target_url: https://www.infoq.cn/profile/C1552CBAA94214/publish
+      reuse_current: false
+      article_title: "Playwright Shell Demo: InfoQ 自动化发布验证"
+      article_body: |
+        这是一篇由 playwright-shell 自动创建并发布的 demo 文章。
+
+        目标是验证以下自动化流程：
+        1. 从 InfoQ 发布页点击立即创作
+        2. 自动打开新的草稿页签
+        3. 自动填写标题、正文、摘要与标签
+        4. 自动识别发布设置弹窗并点击确定
+
+        如果你看到这篇文章，说明基础发布链路已经跑通。
+      article_summary: 这是一篇由 playwright-shell 自动创建的 InfoQ demo 文章，用于验证标题、正文、摘要、标签和确认发布流程。
+      article_tags:
+        - Python
+        - AI
+      analyze_after_publish: true
+      label: infoq-publish-article
+
   - name: comment_demo
     workflow: comment
     enabled: true
