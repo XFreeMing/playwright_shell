@@ -11,16 +11,12 @@ from playwright_shell.models import AuthFile, TaskFile
 _PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent
 
 
-class _PathDefault:
-    """Lazy path defaults resolved against the project root at import time."""
+def _default_task_file() -> Path:
+    return _PROJECT_ROOT / "examples" / "tasks.yaml"
 
-    @staticmethod
-    def task_file() -> Path:
-        return _PROJECT_ROOT / "examples" / "tasks.yaml"
 
-    @staticmethod
-    def auth_file() -> Path:
-        return _PROJECT_ROOT / "examples" / "auth_profiles.yaml"
+def _default_auth_file() -> Path:
+    return _PROJECT_ROOT / "examples" / "auth_profiles.yaml"
 
 
 class AutomationSettings(BaseSettings):
@@ -28,8 +24,8 @@ class AutomationSettings(BaseSettings):
     browser_mode: str = "cdp"
     headless: bool = False
     base_url: str | None = None
-    task_file: Path = Field(default_factory=_PathDefault.task_file)
-    auth_file: Path = Field(default_factory=_PathDefault.auth_file)
+    task_file: Path = Field(default_factory=_default_task_file)
+    auth_file: Path = Field(default_factory=_default_auth_file)
     downloads_dir: Path = Path("data/downloads")
     screenshot_dir: Path = Path("data/screenshots")
     page_analysis_dir: Path = Path("data/page_analysis")
@@ -56,16 +52,16 @@ class AutomationSettings(BaseSettings):
     @model_validator(mode="after")
     def _resolve_output_dirs(self) -> "AutomationSettings":
         """Make output dirs absolute relative to cwd if they are relative."""
-        for name in (
-            "downloads_dir",
-            "screenshot_dir",
-            "page_analysis_dir",
-            "profiles_dir",
-            "storage_states_dir",
-        ):
-            path: Path = getattr(self, name)
-            if not path.is_absolute():
-                setattr(self, name, Path.cwd() / path)
+        if not self.downloads_dir.is_absolute():
+            self.downloads_dir = Path.cwd() / self.downloads_dir
+        if not self.screenshot_dir.is_absolute():
+            self.screenshot_dir = Path.cwd() / self.screenshot_dir
+        if not self.page_analysis_dir.is_absolute():
+            self.page_analysis_dir = Path.cwd() / self.page_analysis_dir
+        if not self.profiles_dir.is_absolute():
+            self.profiles_dir = Path.cwd() / self.profiles_dir
+        if not self.storage_states_dir.is_absolute():
+            self.storage_states_dir = Path.cwd() / self.storage_states_dir
         return self
 
     def ensure_directories(self) -> None:

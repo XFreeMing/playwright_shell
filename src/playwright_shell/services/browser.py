@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import json
-from abc import ABC, abstractmethod
 from pathlib import Path
 from urllib.error import URLError
 from urllib.parse import urljoin, urlparse
@@ -10,119 +9,6 @@ from urllib.request import urlopen
 from playwright.sync_api import Browser, BrowserContext, Page, Playwright, sync_playwright
 
 from playwright_shell.config import AutomationSettings
-
-
-class _BrowserConnector(ABC):
-    """Strategy for launching/connecting to a browser."""
-
-    @abstractmethod
-    def connect(
-        self,
-        launcher,
-        settings: AutomationSettings,
-        base_url: str | None,
-        storage_state_path: Path | None,
-    ) -> tuple[Browser | None, BrowserContext, bool]:
-        """Return (browser, context, external_context)."""
-
-
-class _CdpConnector(_BrowserConnector):
-    """Connect to an existing Chrome via CDP."""
-
-    def __init__(self, cdp_url: str) -> None:
-        self.cdp_url = cdp_url
-
-    def connect(
-        self,
-        launcher,
-        settings: AutomationSettings,
-        base_url: str | None,
-        storage_state_path: Path | None,
-    ) -> tuple[Browser | None, BrowserContext, bool]:
-        del storage_state_path  # not used in CDP mode
-        browser = launcher.connect_over_cdp(self._resolve_cdp_endpoint())
-        if browser.contexts:
-            context = browser.contexts[0]
-            external = True
-        else:
-            context = browser.new_context(base_url=base_url)
-            external = False
-        context.set_default_timeout(settings.timeout_ms)
-        return browser, context, external
-
-    def _resolve_cdp_endpoint(self) -> str:
-        if self.cdp_url.startswith("ws://") or self.cdp_url.startswith("wss://"):
-            parsed = urlparse(self.cdp_url)
-            if parsed.path and parsed.path not in {"", "/"}:
-                return self.cdp_url
-            discovery_base = f"http://{parsed.netloc}"
-        else:
-            discovery_base = self.cdp_url.rstrip("/")
-
-        version_url = urljoin(f"{discovery_base}/", "json/version")
-        try:
-            with urlopen(version_url, timeout=5) as response:
-                payload = json.loads(response.read().decode("utf-8"))
-        except (OSError, URLError, TimeoutError, json.JSONDecodeError) as error:
-            raise RuntimeError(
-                f"Could not discover Chrome CDP websocket from {version_url}.",
-            ) from error
-
-        websocket_url = payload.get("webSocketDebuggerUrl")
-        if not websocket_url:
-            raise RuntimeError(
-                f"Chrome DevTools endpoint {version_url} did not return webSocketDebuggerUrl.",
-            )
-        return str(websocket_url)
-
-
-class _PersistentContextConnector(_BrowserConnector):
-    """Launch browser with a persistent user data directory."""
-
-    def __init__(self, user_data_dir: Path) -> None:
-        self.user_data_dir = user_data_dir
-
-    def connect(
-        self,
-        launcher,
-        settings: AutomationSettings,
-        base_url: str | None,
-        storage_state_path: Path | None,
-    ) -> tuple[None, BrowserContext, bool]:
-        del storage_state_path  # not used with persistent context
-        context = launcher.launch_persistent_context(
-            user_data_dir=str(self.user_data_dir),
-            headless=settings.headless,
-            slow_mo=settings.slow_mo_ms,
-            accept_downloads=True,
-            base_url=base_url,
-        )
-        context.set_default_timeout(settings.timeout_ms)
-        return None, context, False
-
-
-class _StandardLauncher(_BrowserConnector):
-    """Launch a fresh browser and create a new context."""
-
-    def connect(
-        self,
-        launcher,
-        settings: AutomationSettings,
-        base_url: str | None,
-        storage_state_path: Path | None,
-    ) -> tuple[Browser, BrowserContext, bool]:
-        browser = launcher.launch(
-            headless=settings.headless,
-            slow_mo=settings.slow_mo_ms,
-        )
-        kwargs: dict[str, str] = {"accept_downloads": True}
-        if base_url:
-            kwargs["base_url"] = base_url
-        if storage_state_path:
-            kwargs["storage_state"] = str(storage_state_path)
-        context = browser.new_context(**kwargs)
-        context.set_default_timeout(settings.timeout_ms)
-        return browser, context, False
 
 
 class BrowserSession:
@@ -153,17 +39,67 @@ class BrowserSession:
         self.settings.ensure_directories()
         self._playwright = sync_playwright().start()
         launcher = getattr(self._playwright, self.settings.browser_type)
-        connector = self._make_connector()
-        self._browser, self._context, self._external_context = connector.connect(
-            launcher, self.settings, self.base_url, self.storage_state_path,
-        )
 
-    def _make_connector(self) -> _BrowserConnector:
         if self.browser_mode == "cdp":
-            return _CdpConnector(self.cdp_url)
-        if self.user_data_dir is not None:
-            return _PersistentContextConnector(self.user_data_dir)
-        return _StandardLauncher()
+            ws_url = self._resolve_cdp_endpoint()
+            browser = launcher.connect_over_cdp(ws_url)
+            if browser.contexts:
+                self._context = browser.contexts[0]
+                self._external_context = True
+            else:
+                self._context = browser.new_context(base_url=self.base_url)
+                self._external_context = False
+            self._context.set_default_timeout(self.settings.timeout_ms)
+            self._browser = browser
+        elif self.user_data_dir is not None:
+            self._context = launcher.launch_persistent_context(
+                user_data_dir=str(self.user_data_dir),
+                headless=self.settings.headless,
+                slow_mo=self.settings.slow_mo_ms,
+                accept_downloads=True,
+                base_url=self.base_url,
+            )
+            self._context.set_default_timeout(self.settings.timeout_ms)
+            self._browser = None
+            self._external_context = False
+        else:
+            self._browser = launcher.launch(
+                headless=self.settings.headless,
+                slow_mo=self.settings.slow_mo_ms,
+            )
+            kwargs: dict[str, str] = {"accept_downloads": True}
+            if self.base_url:
+                kwargs["base_url"] = self.base_url
+            if self.storage_state_path:
+                kwargs["storage_state"] = str(self.storage_state_path)
+            self._context = self._browser.new_context(**kwargs)
+            self._context.set_default_timeout(self.settings.timeout_ms)
+            self._external_context = False
+
+    def _resolve_cdp_endpoint(self) -> str:
+        if self.cdp_url.startswith("ws://") or self.cdp_url.startswith("wss://"):
+            parsed = urlparse(self.cdp_url)
+            if parsed.path and parsed.path not in {"", "/"}:
+                return self.cdp_url
+            discovery_base = f"http://{parsed.netloc}"
+        else:
+            discovery_base = self.cdp_url.rstrip("/")
+
+        version_url = urljoin(f"{discovery_base}/", "json/version")
+        try:
+            with urlopen(version_url, timeout=5) as response:
+                payload = json.loads(response.read().decode("utf-8"))
+        except (OSError, URLError, TimeoutError, json.JSONDecodeError) as error:
+            raise RuntimeError(
+                f"Could not discover Chrome CDP websocket from {version_url}.",
+            ) from error
+
+        websocket_url = payload.get("webSocketDebuggerUrl")
+        if not websocket_url:
+            raise RuntimeError(
+                f"Chrome DevTools endpoint {version_url} did not return webSocketDebuggerUrl.",
+            )
+        return str(websocket_url)
 
     @property
     def context(self) -> BrowserContext:

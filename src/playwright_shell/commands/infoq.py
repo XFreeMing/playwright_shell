@@ -69,7 +69,7 @@ def _infoq_browser(auth_profile: str | None, cdp_url: str | None, *, keep_open: 
     configure_logging(settings.log_level)
     browser = _create_browser(settings, auth_profile, cdp_url)
     try:
-        yield browser, settings
+        yield browser
     finally:
         if keep_open:
             typer.echo("Use --keep-open to keep the browser session active.")
@@ -99,7 +99,7 @@ def start_create(
 
     This command opens a new draft editor tab.
     """
-    with _infoq_browser(auth_profile, cdp_url, keep_open=keep_open) as (browser, _):
+    with _infoq_browser(auth_profile, cdp_url, keep_open=keep_open) as browser:
         service = InfoQService()
         publish_page = browser.open_page(target_url, reuse_current=True)
         service.wait_for_page_ready(publish_page)
@@ -117,7 +117,7 @@ def write_title(
     keep_open: KeepOpenOption = False,
 ) -> None:
     """Fill in the article title in the draft editor."""
-    with _infoq_browser(auth_profile, cdp_url, keep_open=keep_open) as (browser, _):
+    with _infoq_browser(auth_profile, cdp_url, keep_open=keep_open) as browser:
         draft_page = _require_draft_page(browser)
         service = InfoQService()
         service.write_title(draft_page, title)
@@ -133,7 +133,7 @@ def write_body(
     keep_open: KeepOpenOption = False,
 ) -> None:
     """Fill in the article body content in the draft editor."""
-    with _infoq_browser(auth_profile, cdp_url, keep_open=keep_open) as (browser, _):
+    with _infoq_browser(auth_profile, cdp_url, keep_open=keep_open) as browser:
         draft_page = _require_draft_page(browser)
         service = InfoQService()
         service.write_body(draft_page, body)
@@ -148,7 +148,7 @@ def open_publish_dialog(
     keep_open: KeepOpenOption = False,
 ) -> None:
     """Open the publish settings dialog in the draft editor."""
-    with _infoq_browser(auth_profile, cdp_url, keep_open=keep_open) as (browser, _):
+    with _infoq_browser(auth_profile, cdp_url, keep_open=keep_open) as browser:
         draft_page = _require_draft_page(browser)
         service = InfoQService()
         service.open_publish_dialog(draft_page)
@@ -167,7 +167,7 @@ def fill_summary(
 
     The publish dialog must be open (run 'open-publish-dialog' first).
     """
-    with _infoq_browser(auth_profile, cdp_url, keep_open=keep_open) as (browser, _):
+    with _infoq_browser(auth_profile, cdp_url, keep_open=keep_open) as browser:
         draft_page = _require_draft_page(browser)
         service = InfoQService()
         service.fill_summary(draft_page, summary)
@@ -186,7 +186,7 @@ def add_tag(
 
     The publish dialog must be open (run 'open-publish-dialog' first).
     """
-    with _infoq_browser(auth_profile, cdp_url, keep_open=keep_open) as (browser, _):
+    with _infoq_browser(auth_profile, cdp_url, keep_open=keep_open) as browser:
         draft_page = _require_draft_page(browser)
         service = InfoQService()
         service.add_tag(draft_page, tag)
@@ -203,7 +203,7 @@ def confirm_publish(
 
     This command closes the browser session after completion.
     """
-    with _infoq_browser(auth_profile, cdp_url, keep_open=False) as (browser, _):
+    with _infoq_browser(auth_profile, cdp_url, keep_open=False) as browser:
         draft_page = _require_draft_page(browser)
         service = InfoQService()
         service.confirm_publish(draft_page)
@@ -221,7 +221,7 @@ def list_articles(
     keep_open: KeepOpenOption = False,
 ) -> None:
     """List published articles."""
-    with _infoq_browser(auth_profile, cdp_url, keep_open=keep_open) as (browser, _):
+    with _infoq_browser(auth_profile, cdp_url, keep_open=keep_open) as browser:
         service = InfoQService()
         publish_page = browser.open_page(target_url, reuse_current=True)
         service.wait_for_page_ready(publish_page)
@@ -257,7 +257,7 @@ def delete_article(
     keep_open: KeepOpenOption = False,
 ) -> None:
     """Delete an article by its ID."""
-    with _infoq_browser(auth_profile, cdp_url, keep_open=keep_open) as (browser, _):
+    with _infoq_browser(auth_profile, cdp_url, keep_open=keep_open) as browser:
         service = InfoQService()
         publish_page = browser.open_page(target_url, reuse_current=True)
         service.wait_for_page_ready(publish_page)
