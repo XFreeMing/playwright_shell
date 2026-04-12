@@ -5,7 +5,6 @@ from playwright_shell.logging_utils import get_logger
 from playwright_shell.models import TaskSpec
 from playwright_shell.services.auth import AuthManager
 from playwright_shell.services.browser import BrowserSession
-from playwright_shell.services.desktop import DesktopController
 from playwright_shell.workflows.base import WorkflowContext
 from playwright_shell.workflows.registry import build_workflow_registry
 
@@ -30,14 +29,12 @@ class AutomationRuntime:
 
         browser_kwargs = self.auth_manager.browser_session_kwargs(task.auth_profile)
         browser = BrowserSession(self.settings, **browser_kwargs)
-        desktop = DesktopController(self.settings)
         browser.start()
         try:
             context = WorkflowContext(
                 settings=self.settings,
                 logger=self.logger,
                 browser=browser,
-                desktop=desktop,
             )
             workflow.run(task, context)
         except Exception:

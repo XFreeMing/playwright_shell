@@ -2,11 +2,11 @@
 
 from __future__ import annotations
 
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock
 
 import pytest
 
-from playwright_shell.services.infoq import InfoQService, InfoqArticle
+from playwright_shell.services.infoq import InfoqArticle, InfoQService
 
 
 class TestInfoqArticle:

@@ -3,10 +3,24 @@ from __future__ import annotations
 from pathlib import Path
 
 import yaml
-from pydantic import Field
+from pydantic import Field, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 from playwright_shell.models import AuthFile, TaskFile
+
+_PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent
+
+
+class _PathDefault:
+    """Lazy path defaults resolved against the project root at import time."""
+
+    @staticmethod
+    def task_file() -> Path:
+        return _PROJECT_ROOT / "examples" / "tasks.yaml"
+
+    @staticmethod
+    def auth_file() -> Path:
+        return _PROJECT_ROOT / "examples" / "auth_profiles.yaml"
 
 
 class AutomationSettings(BaseSettings):
@@ -14,8 +28,8 @@ class AutomationSettings(BaseSettings):
     browser_mode: str = "cdp"
     headless: bool = False
     base_url: str | None = None
-    task_file: Path = Path("examples/tasks.yaml")
-    auth_file: Path = Path("examples/auth_profiles.yaml")
+    task_file: Path = Field(default_factory=_PathDefault.task_file)
+    auth_file: Path = Field(default_factory=_PathDefault.auth_file)
     downloads_dir: Path = Path("data/downloads")
     screenshot_dir: Path = Path("data/screenshots")
     page_analysis_dir: Path = Path("data/page_analysis")
@@ -38,6 +52,21 @@ class AutomationSettings(BaseSettings):
         env_prefix="PS_",
         extra="ignore",
     )
+
+    @model_validator(mode="after")
+    def _resolve_output_dirs(self) -> "AutomationSettings":
+        """Make output dirs absolute relative to cwd if they are relative."""
+        for name in (
+            "downloads_dir",
+            "screenshot_dir",
+            "page_analysis_dir",
+            "profiles_dir",
+            "storage_states_dir",
+        ):
+            path: Path = getattr(self, name)
+            if not path.is_absolute():
+                setattr(self, name, Path.cwd() / path)
+        return self
 
     def ensure_directories(self) -> None:
         self.downloads_dir.mkdir(parents=True, exist_ok=True)

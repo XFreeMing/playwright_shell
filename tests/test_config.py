@@ -1,6 +1,11 @@
 from pathlib import Path
 
-from playwright_shell.config import load_auth_file, load_task_file
+from playwright_shell.config import (
+    _PROJECT_ROOT,
+    AutomationSettings,
+    load_auth_file,
+    load_task_file,
+)
 
 
 def test_load_task_file_reads_example_tasks() -> None:
@@ -22,4 +27,24 @@ def test_load_auth_file_reads_example_profiles() -> None:
     assert len(auth_file.profiles) == 4
     assert auth_file.get_profile("zhihu_default").provider == "zhihu"
     assert auth_file.get_profile("infoq_default").provider == "infoq"
+
+
+def test_settings_defaults_resolve_to_absolute_paths() -> None:
+    settings = AutomationSettings()
+
+    assert settings.task_file.is_absolute()
+    assert settings.auth_file.is_absolute()
+    assert settings.task_file.parent.name == "examples"
+    assert settings.auth_file.parent.name == "examples"
+    # Both resolve relative to the project root (not cwd).
+    assert settings.task_file.parent.parent == _PROJECT_ROOT
+
+
+def test_output_dirs_resolved_relative_to_cwd() -> None:
+    settings = AutomationSettings()
+
+    assert settings.downloads_dir.is_absolute()
+    assert settings.screenshot_dir.is_absolute()
+    # When not overridden, they are made absolute relative to cwd.
+    assert settings.downloads_dir == Path.cwd() / "data" / "downloads"
 

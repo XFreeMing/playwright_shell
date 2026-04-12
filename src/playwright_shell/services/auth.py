@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import json
+import time
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -186,13 +188,30 @@ class AuthManager:
         finally:
             browser.close()
 
+    def _storage_has_valid_cookies(self, profile_name: str) -> bool:
+        """Quick check: does the storage state file exist with non-expired cookies?"""
+        paths = self.auth_paths(profile_name)
+        if not paths.storage_state_path.is_file():
+            return False
+        try:
+            with open(paths.storage_state_path, encoding="utf-8") as f:
+                data = json.load(f)
+            cookies = data.get("cookies", [])
+            now = time.time()
+            return any(c.get("expires", now + 1) > now for c in cookies)
+        except (json.JSONDecodeError, OSError):
+            return False
+
     def is_authenticated(self, profile_name: str) -> bool:
         profile = self.get_profile(profile_name)
         provider = self.get_provider(profile)
         paths = self.auth_paths(profile_name)
         if not paths.user_data_dir.exists():
             return False
+        if self._storage_has_valid_cookies(profile_name):
+            return True
 
+        # No valid storage state — do a full browser check.
         browser = BrowserSession(
             self.settings,
             base_url=provider.base_url(profile),
