@@ -2,8 +2,8 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
+from playwright_shell.domains.infoq.service import InfoQService
 from playwright_shell.models import TaskSpec
-from playwright_shell.services.infoq import InfoQService
 from playwright_shell.services.page_analyzer import PageAnalyzer
 from playwright_shell.workflows.base import Workflow, WorkflowContext
 

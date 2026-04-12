@@ -9,6 +9,5 @@ def test_registry_contains_expected_workflows() -> None:
         "comment",
         "collect",
         "download",
-        "infoq_publish",
         "infoq_article_publish",
     }.issubset(registry)

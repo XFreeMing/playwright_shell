@@ -4,8 +4,8 @@ from pathlib import Path
 
 import typer
 
-from playwright_shell.commands.infoq import infoq_app
 from playwright_shell.config import AutomationSettings
+from playwright_shell.domains.infoq import infoq_app
 from playwright_shell.logging_utils import configure_logging
 from playwright_shell.runtime import AutomationRuntime
 from playwright_shell.services.auth import AuthManager

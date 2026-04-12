@@ -10,10 +10,10 @@ import typer
 from playwright.sync_api import Page
 
 from playwright_shell.config import AutomationSettings
+from playwright_shell.domains.infoq.service import InfoQService
 from playwright_shell.logging_utils import configure_logging, get_logger
 from playwright_shell.services.auth import AuthManager
 from playwright_shell.services.browser import BrowserSession
-from playwright_shell.services.infoq import InfoQService
 
 infoq_app = typer.Typer(help="InfoQ article publishing commands.")
 

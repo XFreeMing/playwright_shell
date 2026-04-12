@@ -6,7 +6,7 @@ from unittest.mock import MagicMock
 
 import pytest
 
-from playwright_shell.services.infoq import InfoqArticle, InfoQService
+from playwright_shell.domains.infoq.service import InfoqArticle, InfoQService
 
 
 class TestInfoqArticle:
